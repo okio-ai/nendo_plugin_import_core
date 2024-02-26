@@ -1,0 +1,8 @@
+
+site_name: nendo_plugin_import_core
+
+nav:
+    - "index.md"
+    - Advanced: "advanced.md"
+
+    
