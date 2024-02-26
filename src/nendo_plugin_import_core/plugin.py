@@ -54,13 +54,12 @@ class ImportCore(NendoGeneratePlugin):
     import_folder: str = None
 
     def __init__(self, **data: Any):
-        """Initialize the plugin with the StyleTTS2 model."""
         super().__init__(**data)
         if settings.import_folder is not None:
             os.makedirs(settings.import_folder, exist_ok=True)
             self.import_folder = settings.import_folder
         else:
-            self.import_folder = os.path.join(Path.home(), "nendo", "imported")
+            self.import_folder = os.path.join(Path.home(),".cache", "nendo", "imported")
             os.makedirs(self.import_folder, exist_ok=True)
 
 
