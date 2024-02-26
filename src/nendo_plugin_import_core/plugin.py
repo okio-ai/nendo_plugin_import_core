@@ -30,7 +30,7 @@ def download_file(link: str, output_path: str) -> str:
     return output_path
 
 
-def download_yt_dlp(link: str, output_path: str) -> str:
+def download_yt_dlp(link: str, output_path: str, limit: int) -> str:
     ydl_opts = {
         'format': 'mp3/bestaudio/best',
         "outtmpl": f"{output_path}/%(title)s.%(ext)s",
@@ -40,6 +40,8 @@ def download_yt_dlp(link: str, output_path: str) -> str:
             'preferredcodec': 'mp3',
         }]
     }
+    if limit > 0:
+        ydl_opts["playlistend"] = limit
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         error_code = ydl.download([link])
@@ -59,12 +61,11 @@ class ImportCore(NendoGeneratePlugin):
             os.makedirs(settings.import_folder, exist_ok=True)
             self.import_folder = settings.import_folder
         else:
-            self.import_folder = os.path.join(Path.home(),".cache", "nendo", "imported")
+            self.import_folder = os.path.join(Path.home(), ".cache", "nendo", "imported")
             os.makedirs(self.import_folder, exist_ok=True)
 
-
     @NendoGeneratePlugin.run_track
-    def import_track(self, links: List[str]) -> List[NendoTrack]:
+    def import_track(self, links: List[str], limit: int = -1) -> List[NendoTrack]:
         tracks = []
 
         for link in links:
@@ -72,18 +73,29 @@ class ImportCore(NendoGeneratePlugin):
             if AudioFileUtils().is_supported_filetype(link):
                 output_path = os.path.join(self.import_folder, link.split("/")[-1])
                 download_file(link, output_path)
-                track = self.nendo_instance.library.add_track(file_path=output_path)
+                track = self.nendo_instance.library.add_track(
+                    file_path=output_path,
+                    meta={"original_link": link}
+                )
+                track.set_meta({
+                    "title": link.split("/")[-1].split(".")[0]
+                })
                 tracks.append(track)
-                continue
-
-            try:
-                output_path = os.path.join(self.import_folder, "yt-dlp", str(time.time_ns()))
-                download_yt_dlp(link, output_path)
-                downloaded_tracks = self.nendo_instance.library.add_tracks(path=output_path)
-                tracks.extend(downloaded_tracks)
-            except Exception as e:
-                # TODO here we try the final fallback
-                # which is downloading page body and checking for audio links
-                raise
+            else:
+                try:
+                    output_path = os.path.join(self.import_folder, "yt-dlp", str(time.time_ns()))
+                    download_yt_dlp(link, output_path, limit)
+                    downloaded_tracks = self.nendo_instance.library.add_tracks(path=output_path)
+                    for t in downloaded_tracks:
+                        title = t.get_meta("title")
+                        t.set_meta({
+                            "original_link": link,
+                            "title": title.replace(f".{title.split('.')[-1]}", "")
+                        })
+                    tracks.extend(downloaded_tracks)
+                except Exception as e:
+                    # TODO here we try the final fallback
+                    # which is downloading page body and checking for audio links
+                    raise
 
         return tracks
