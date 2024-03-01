@@ -15,12 +15,8 @@ keywords = [
     "music",
     "okio",
     "nendo",
-    "music production",
-    "music generation",
-    "music information retrieval",
-    "MIR",
-    "music analysis",
-    "song analysis",
+    "music retrieval",
+    "web crawling",
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -36,7 +32,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.11"
-nendo = "^0.2.0"
+nendo = "^0.2.1"
 pydantic = "^2.4.2"
 requests = "^2.31.0"
 yt_dlp = "^2023.11.16"
@@ -47,6 +43,8 @@ target-version = "py38"
 # Same as Black.
 line-length = 88
 src = ["src"]
+
+[lint]
 select = [
     "A",
     # "ANN", # flake8-annotations
@@ -64,6 +62,7 @@ select = [
     "F",
     # "FBT", # flake8-boolean-trap
     "G",
+    "I", # Isort
     "ICN",
     "INP",
     "ISC",
@@ -94,7 +93,6 @@ select = [
     "W",
     "YTT",
 ]
-extend-select = ["I"]
 ignore = [
   "A001",  # Variable is shadowing a Python builtin
   "ANN101",  # Missing type annotation for self
@@ -115,10 +113,7 @@ ignore = [
   "SLF001", # Private member accessed
   "TRY003",  # Avoid specifying long messages outside the exception class
 ]
-fixable = [
-    "F401", # Remove unused imports.
-    "NPY001", # Fix numpy types, which are removed in 1.24.
-]
+fixable = ["ALL"]
 unfixable = ["B"]
 exclude = [
     ".bzr",
@@ -147,14 +142,14 @@ exclude = [
 ]
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-[tool.ruff.mccabe]
+[lint.mccabe]
 max-complexity = 10
 
-[tool.ruff.isort]
-lines-after-imports = 2
+[lint.isort]
+profile = "black"
 known-first-party = ["nendo"]
 
-[tool.ruff.pydocstyle]
+[lint.pydocstyle]
 convention = "google"
 
 [build-system]

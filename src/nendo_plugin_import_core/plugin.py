@@ -96,6 +96,6 @@ class ImportCore(NendoGeneratePlugin):
                 except Exception as e:
                     # TODO here we try the final fallback
                     # which is downloading page body and checking for audio links
-                    raise
+                    raise e
 
         return tracks

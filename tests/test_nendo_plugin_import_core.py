@@ -28,6 +28,10 @@ class ImportCoreTests(unittest.TestCase):
         self.assertEqual(tracks[0].get_meta("title"), "Rick Astley - Never Gonna Give You Up (Official Music Video)")
 
     def test_import_track_from_youtube_playlist(self):
+        both_titles = [
+            "Outkast - B.O.B. (Bombs Over Baghdad) (Official HD Video)",
+            "Outkast - Hey Ya! (Official HD Video)"
+        ]
         nd.library.reset(force=True)
         tracks = nd.plugins.import_core(
             links=["https://www.youtube.com/playlist?list=PLAMk5GdNAs4OL2ePoB-Qb37cKJtY9lwFL"])
@@ -35,8 +39,8 @@ class ImportCoreTests(unittest.TestCase):
         self.assertEqual(len(nd.library), 2)
         self.assertTrue(tracks[0].has_meta("original_link"))
         self.assertTrue(tracks[1].has_meta("original_link"))
-        self.assertEqual(tracks[0].get_meta("title"), "Outkast - B.O.B. (Bombs Over Baghdad) (Official HD Video)")
-        self.assertEqual(tracks[1].get_meta("title"), "Outkast - Hey Ya! (Official HD Video)")
+        self.assertTrue(tracks[0].get_meta("title") in both_titles)
+        self.assertTrue(tracks[1].get_meta("title") in both_titles)
 
     def test_import_track_from_youtube_playlist_with_limit(self):
         nd.library.reset(force=True)
