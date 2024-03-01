@@ -32,12 +32,13 @@ def download_file(link: str, output_path: str) -> str:
 
 def download_yt_dlp(link: str, output_path: str, limit: int) -> str:
     ydl_opts = {
-        'format': 'mp3/bestaudio/best',
+        "format": "mp3/bestaudio/best",
         "outtmpl": f"{output_path}/%(title)s.%(ext)s",
+        "ignoreerrors": True,
         # ℹ️ See help(yt_dlp.postprocessor) for a list of available Postprocessors and their arguments
-        'postprocessors': [{  # Extract audio using ffmpeg
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
+        "postprocessors": [{  # Extract audio using ffmpeg
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "mp3",
         }]
     }
     if limit > 0:
