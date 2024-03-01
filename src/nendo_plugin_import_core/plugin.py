@@ -43,11 +43,14 @@ def download_yt_dlp(link: str, output_path: str, limit: int) -> str:
     if limit > 0:
         ydl_opts["playlistend"] = limit
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        error_code = ydl.download([link])
-        if error_code:
-            raise NendoError(f"Error while downloading {link}.")
-    return output_path
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            error_code = ydl.download([link])
+            if error_code:
+                raise NendoError(f"Error while downloading {link}.")
+        return output_path
+    except Exception as e:
+        raise NendoError(f"Error while downloading {link}.") from e
 
 
 class ImportCore(NendoGeneratePlugin):
