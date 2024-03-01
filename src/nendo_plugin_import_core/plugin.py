@@ -30,7 +30,7 @@ def download_file(link: str, output_path: str) -> str:
     return output_path
 
 
-def download_yt_dlp(link: str, output_path: str, limit: int) -> str:
+def download_yt_dlp(link: str, output_path: str, limit: int) -> int:
     ydl_opts = {
         "format": "mp3/bestaudio/best",
         "outtmpl": f"{output_path}/%(title)s.%(ext)s",
@@ -44,14 +44,9 @@ def download_yt_dlp(link: str, output_path: str, limit: int) -> str:
     if limit > 0:
         ydl_opts["playlistend"] = limit
 
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            error_code = ydl.download([link])
-            if error_code:
-                raise NendoError(f"Error while downloading {link}.")
-        return output_path
-    except Exception as e:
-        raise NendoError(f"Error while downloading {link}.") from e
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        error_code = ydl.download([link])
+        return error_code
 
 
 class ImportCore(NendoGeneratePlugin):
@@ -88,7 +83,12 @@ class ImportCore(NendoGeneratePlugin):
             else:
                 try:
                     output_path = os.path.join(self.import_folder, "yt-dlp", str(time.time_ns()))
-                    download_yt_dlp(link, output_path, limit)
+                    error_code = download_yt_dlp(link, output_path, limit)
+                    if error_code != 0:
+                        self.nendo_instance.logger.warning(f"Download finished with error code {error_code}")
+                        if len([name for name in os.listdir('.') if os.path.isfile(name)]) == 0:
+                            raise NendoError(f"Error while downloading {link}: Error code {error_code}")
+                        self.nendo_instance.logger.warning("Some tracks were downloaded successfully, continuing...")
                     downloaded_tracks = self.nendo_instance.library.add_tracks(path=output_path)
                     for t in downloaded_tracks:
                         title = t.get_meta("title")
